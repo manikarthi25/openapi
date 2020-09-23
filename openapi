@@ -1,0 +1,206 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: OpenAPI Course
+  description: 'Specification for Open API'
+  termsOfService: :http://github.com/manikarthi25
+  contact:
+    name: Manikandan
+    url: http://github.com/manikarthi25
+    email: manikarthi25@gmail.com
+  license:
+    name: apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers: 
+  - url: http://github.com/manikarthi25
+    description: Deployment Server
+  - url: http://github.com/manikarthi25
+    description: QA Server
+  - url: http://github.com/manikarthi25
+    description: Production Server
+  
+paths: 
+  /v1/customers:
+    get:
+      summary: Get Customers
+      description: Get all **customers**
+      tags:
+       - Customer
+      parameters:
+        - $ref: "#/components/parameters/PageNumberParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+      responses:
+        '200': 
+          description: List of Customers
+          content:
+            application/json: 
+              schema:
+                $ref: "#/components/schemas/CustomerList"
+        "404":
+          description: No Customers
+    post:
+      summary: Add customer
+      description: Add new customer
+      tags:
+        - Customer
+      requestBody:
+       required: true
+       content:
+        application/json:
+         schema: 
+          $ref: "#/components/schemas/Customers"
+      responses:
+       '201':
+          description: created customer
+          headers:
+            Locations:
+              description: Header Value
+              schema:
+                type: string
+                format: uri
+                example: http://wwww.cts.com/customer
+      security: []
+  /v1/customer/{customerId}:
+    get:
+      summary: Get Customer by id
+      description: Get single **customer** by id
+      tags:
+       - Customer
+      parameters:
+       - $ref: "#/components/parameters/CustomerIdPathParam"
+      responses:
+        '200':
+          description: Customer Id
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/Customers"
+    put:
+      summary: Update customer
+      description: update existing customer
+      tags:
+        - Customer
+      parameters:
+       - $ref: "#/components/parameters/CustomerIdPathParam"
+      requestBody:
+       required: true
+       content:
+        application/json:
+         schema: 
+          $ref: "#/components/schemas/Customers"
+      responses:
+       '200':
+          description: updated customer
+    delete:
+      summary: Delete customer
+      description: delete existing customer
+      tags:
+        - Customer
+      parameters:
+       - $ref: "#/components/parameters/CustomerIdPathParam"
+      responses:
+       '200':
+          description: Customer Deleted
+       '400':
+          description: Bad Request
+       '404':
+          description: Customer Not found
+       '409':
+          description: Conflict
+  /v1/owners:
+    get:
+      summary: Get Owners
+      description: Get *Owner** 
+      tags:
+       - Owner
+      responses:
+        '200': 
+          description: List of Customers
+security:
+  - BasicAuth: []
+  - JwtAuthToken: []
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    JwtAuthToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Address:
+      type: object
+      properties:
+        line1:
+          type: string
+          example: Nandhagopal Road
+        city:
+          type: string
+          example: Coimbatore
+        stateCode:
+          type: string
+          minLength: 2
+          maxLength: 100
+          #enum: [TN,BGL,MI]
+          enum: 
+            - TN
+            - BGL
+            - MI
+        zipcode:
+          type: string
+          example: 641044
+    Customers: 
+      type: object
+      description: Customer Objects
+      properties:
+        id:
+          type: string
+          #readOnly: true
+          readOnly: true
+          format: uuid
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Manikandan
+        lastName: 
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: K
+        address:
+          $ref: "#/components/schemas/Address"
+    CustomerList:
+      type: array
+      minimum: 1
+      maximum: 100
+      description: List of customers
+      items:
+        $ref: "#/components/schemas/Customers"
+  parameters:
+    PageNumberParam:
+     name: pageNumber
+     in: query
+     description: Page Number
+     schema:
+       type: integer
+       format: int32
+       default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Page Size
+      required: false
+      schema:
+        type: integer
+        format: int32
+        default: 25
+    CustomerIdPathParam:
+      name: customerId
+      in: path
+      description: Getting customer by customer id
+      required: true
+      schema:
+       type: string
+       format: uuid
